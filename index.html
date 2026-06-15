@@ -213,7 +213,7 @@
       left: 14px;
       top: 14px;
       display: grid;
-      grid-template-columns: repeat(4, minmax(74px, 1fr));
+      grid-template-columns: repeat(5, minmax(74px, 1fr));
       gap: 8px;
       width: min(520px, calc(100% - 28px));
       pointer-events: none;
@@ -396,6 +396,7 @@
             <div class="metric"><span>位置</span><b id="positionValue">0.00 m</b></div>
             <div class="metric"><span>速度 v</span><b id="velocityValue">0.00 m/s</b></div>
             <div class="metric"><span>加速度 a</span><b id="accelValue">0.00 m/s²</b></div>
+            <div class="metric"><span>状态</span><b id="statusValue">运行中</b></div>
           </div>
         </div>
       </section>
@@ -432,7 +433,8 @@
       time: document.getElementById("timeValue"),
       position: document.getElementById("positionValue"),
       velocity: document.getElementById("velocityValue"),
-      accel: document.getElementById("accelValue")
+      accel: document.getElementById("accelValue"),
+      status: document.getElementById("statusValue")
     };
 
     const scenes = {
@@ -450,7 +452,9 @@
           mass: { label: "质量 m", min: 0.5, max: 10, step: 0.1, value: 3, unit: "kg" },
           force: { label: "外力 F", min: -30, max: 30, step: 1, value: 14, unit: "N" },
           friction: { label: "摩擦因数 μ", min: 0, max: 0.8, step: 0.01, value: 0.12, unit: "" },
-          velocity: { label: "初速度 v₀", min: -10, max: 10, step: 0.2, value: 0, unit: "m/s" }
+          velocity: { label: "初速度 v₀", min: -10, max: 10, step: 0.2, value: 0, unit: "m/s" },
+          maxTime: { label: "时间上限", min: 2, max: 20, step: 0.5, value: 8, unit: "s" },
+          limit: { label: "位置边界 ±x", min: 2, max: 8, step: 0.5, value: 7.5, unit: "m" }
         }
       },
       projectile: {
@@ -507,7 +511,7 @@
     function resetState() {
       const now = performance.now();
       if (activeScene === "force") {
-        state = { t: 0, x: -5, y: 0, vx: values.velocity, vy: 0, ax: 0, ay: 0 };
+        state = { t: 0, x: 0, y: 0, vx: values.velocity, vy: 0, ax: 0, ay: 0, stopped: false, stopReason: "" };
       }
       if (activeScene === "projectile") {
         const radians = values.angle * Math.PI / 180;
@@ -560,6 +564,11 @@
     }
 
     function physics(dt) {
+      if (state.stopped) {
+        updateReadout();
+        return;
+      }
+
       if (activeScene === "force") {
         const normal = values.mass * 9.8;
         let frictionForce = 0;
@@ -575,9 +584,9 @@
         state.ax = netForce / values.mass;
         state.vx += state.ax * dt;
         state.x += state.vx * dt;
-        if (state.x > 8 || state.x < -8) {
-          state.x = Math.max(-8, Math.min(8, state.x));
-          state.vx *= -0.35;
+        if (Math.abs(state.x) >= values.limit) {
+          state.x = Math.sign(state.x || state.vx || values.force || 1) * values.limit;
+          stopMotion(`到达 ${format(values.limit)} m 边界`);
         }
       }
 
@@ -608,11 +617,24 @@
       }
 
       state.t += dt;
+      if (activeScene === "force" && state.t >= values.maxTime && !state.stopped) {
+        state.t = values.maxTime;
+        stopMotion(`达到 ${format(values.maxTime)} s`);
+      }
       trail.push({ x: state.x, y: state.y });
       if (trail.length > 360) {
         trail.shift();
       }
       updateReadout();
+    }
+
+    function stopMotion(reason) {
+      state.stopped = true;
+      state.stopReason = reason;
+      state.vx = 0;
+      state.vy = 0;
+      state.ax = 0;
+      state.ay = 0;
     }
 
     function updateReadout() {
@@ -629,6 +651,7 @@
       readouts.position.textContent = position;
       readouts.velocity.textContent = `${format(speed)} m/s`;
       readouts.accel.textContent = `${format(accel)} m/s²`;
+      readouts.status.textContent = state.stopped ? state.stopReason : "运行中";
     }
 
     function draw() {
@@ -660,11 +683,25 @@
       const originX = width / 2;
       const carX = originX + state.x * scale;
       drawGround(ground, width);
+      drawBoundary(originX - values.limit * scale, ground, "-边界");
+      drawBoundary(originX + values.limit * scale, ground, "+边界");
       drawTrail(p => ({ x: originX + p.x * scale, y: ground - 38 }));
       drawCar(carX, ground - 52, 112, 58, "#f0b84d");
       drawArrow(carX, ground - 115, carX + state.vx * 16, ground - 115, "#2364aa", "v");
       drawArrow(carX, ground - 155, carX + values.force * 5, ground - 155, "#c9413a", "ΣF");
       drawAxis(originX, ground + 48, scale, -8, 8, "x / m");
+      if (state.stopped) {
+        label(`已停止：${state.stopReason}`, 72, ground - 205, "#c9413a");
+      }
+    }
+
+    function drawBoundary(x, ground, text) {
+      ctx.strokeStyle = "#c9413a";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 8]);
+      line(x, ground - 130, x, ground + 18);
+      ctx.setLineDash([]);
+      label(text, x - 30, ground - 145, "#c9413a");
     }
 
     function drawProjectileScene(width, height) {
