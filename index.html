@@ -1,0 +1,892 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>牛顿力学模拟器</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17212b;
+      --muted: #607080;
+      --line: #d8e0e7;
+      --paper: #f7f9fb;
+      --panel: #ffffff;
+      --blue: #2364aa;
+      --green: #1b7f5f;
+      --red: #c9413a;
+      --amber: #bd741f;
+      --shadow: 0 16px 42px rgba(26, 43, 62, .11);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, #eef4f8 0%, #f8fafb 42%, #eef2f0 100%);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      padding: 22px;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 48px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      max-width: 760px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .icon-button,
+    .text-button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      min-height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(23, 33, 43, .06);
+    }
+
+    .icon-button {
+      width: 42px;
+      display: grid;
+      place-items: center;
+      font-size: 19px;
+      font-weight: 700;
+    }
+
+    .text-button {
+      padding: 0 14px;
+      font-weight: 700;
+    }
+
+    .icon-button:hover,
+    .text-button:hover,
+    .scene-tab:hover {
+      border-color: #a9bac8;
+      transform: translateY(-1px);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(280px, 350px) minmax(420px, 1fr) minmax(300px, 380px);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, .92);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(250, 252, 253, .88);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.2;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .scene-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .scene-tab {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      border-radius: 8px;
+      min-height: 44px;
+      padding: 0 8px;
+      cursor: pointer;
+      font-weight: 750;
+    }
+
+    .scene-tab.active {
+      color: #fff;
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+
+    .control {
+      display: grid;
+      gap: 8px;
+      padding: 12px 0;
+      border-bottom: 1px solid #edf1f4;
+    }
+
+    .control:last-child {
+      border-bottom: 0;
+    }
+
+    .control label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .control strong {
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--blue);
+    }
+
+    .stage-panel {
+      min-width: 0;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      background: #fbfdff;
+      min-height: 540px;
+      aspect-ratio: 16 / 10;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .readout {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(74px, 1fr));
+      gap: 8px;
+      width: min(520px, calc(100% - 28px));
+      pointer-events: none;
+    }
+
+    .metric {
+      background: rgba(255, 255, 255, .88);
+      border: 1px solid rgba(216, 224, 231, .8);
+      border-radius: 8px;
+      padding: 8px 10px;
+      min-height: 58px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric b {
+      display: block;
+      margin-top: 3px;
+      font-size: 16px;
+    }
+
+    .formula {
+      display: grid;
+      gap: 14px;
+    }
+
+    .equation {
+      border-left: 4px solid var(--blue);
+      background: #f4f8fc;
+      border-radius: 0 8px 8px 0;
+      padding: 12px 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 17px;
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+    }
+
+    .explain {
+      color: #314252;
+      line-height: 1.65;
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .small-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .small-table th,
+    .small-table td {
+      text-align: left;
+      padding: 9px 8px;
+      border-bottom: 1px solid #edf1f4;
+      vertical-align: top;
+    }
+
+    .small-table th {
+      color: var(--muted);
+      font-weight: 700;
+      width: 34%;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .legend i {
+      display: inline-block;
+      width: 22px;
+      height: 4px;
+      border-radius: 99px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .blue-line {
+      background: var(--blue);
+    }
+
+    .green-line {
+      background: var(--green);
+    }
+
+    .red-line {
+      background: var(--red);
+    }
+
+    .amber-line {
+      background: var(--amber);
+    }
+
+    @media (max-width: 1100px) {
+      .layout {
+        grid-template-columns: 320px 1fr;
+      }
+
+      .formula-panel {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        padding: 14px;
+      }
+
+      header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .canvas-wrap {
+        min-height: 420px;
+        aspect-ratio: 4 / 3;
+      }
+
+      .readout {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <h1>牛顿力学模拟器</h1>
+        <p class="subtitle">拖动参数，观察力、加速度、速度和位置怎样一起变化。</p>
+      </div>
+      <div class="top-actions" aria-label="模拟控制">
+        <button class="icon-button" id="playPause" title="暂停或继续">Ⅱ</button>
+        <button class="icon-button" id="step" title="单步推进">›</button>
+        <button class="icon-button" id="reset" title="重置">↺</button>
+        <button class="text-button" id="slow" title="切换慢动作">慢动作</button>
+      </div>
+    </header>
+
+    <section class="layout">
+      <aside class="panel">
+        <div class="panel-head">
+          <h2>实验设置</h2>
+        </div>
+        <div class="panel-body">
+          <div class="scene-tabs" role="tablist" aria-label="实验场景">
+            <button class="scene-tab active" data-scene="force">水平受力</button>
+            <button class="scene-tab" data-scene="projectile">斜抛运动</button>
+            <button class="scene-tab" data-scene="spring">弹簧振子</button>
+          </div>
+          <div id="controls"></div>
+        </div>
+      </aside>
+
+      <section class="panel stage-panel">
+        <div class="panel-head">
+          <h2 id="sceneTitle">水平受力</h2>
+          <div class="legend">
+            <span><i class="blue-line"></i>速度</span>
+            <span><i class="red-line"></i>合力</span>
+            <span><i class="green-line"></i>轨迹</span>
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="stage" width="1200" height="750" aria-label="力学模拟画布"></canvas>
+          <div class="readout">
+            <div class="metric"><span>时间 t</span><b id="timeValue">0.00 s</b></div>
+            <div class="metric"><span>位置</span><b id="positionValue">0.00 m</b></div>
+            <div class="metric"><span>速度 v</span><b id="velocityValue">0.00 m/s</b></div>
+            <div class="metric"><span>加速度 a</span><b id="accelValue">0.00 m/s²</b></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel formula-panel">
+        <div class="panel-head">
+          <h2>公式讲解</h2>
+        </div>
+        <div class="panel-body formula">
+          <div class="equation" id="equation"></div>
+          <p class="explain" id="explain"></p>
+          <table class="small-table" aria-label="变量说明">
+            <tbody id="variableTable"></tbody>
+          </table>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("stage");
+    const ctx = canvas.getContext("2d");
+    const controlsEl = document.getElementById("controls");
+    const sceneTitle = document.getElementById("sceneTitle");
+    const equationEl = document.getElementById("equation");
+    const explainEl = document.getElementById("explain");
+    const variableTable = document.getElementById("variableTable");
+    const playPause = document.getElementById("playPause");
+    const stepButton = document.getElementById("step");
+    const resetButton = document.getElementById("reset");
+    const slowButton = document.getElementById("slow");
+
+    const readouts = {
+      time: document.getElementById("timeValue"),
+      position: document.getElementById("positionValue"),
+      velocity: document.getElementById("velocityValue"),
+      accel: document.getElementById("accelValue")
+    };
+
+    const scenes = {
+      force: {
+        title: "水平受力",
+        equation: "ΣF = ma  →  a = (F - μmg·方向) / m",
+        explain: "小车受到水平推力、重力、支持力和摩擦力。垂直方向力互相抵消，水平方向的合力决定加速度。质量越大，同样的合力带来的加速度越小。",
+        vars: [
+          ["m", "质量，单位 kg"],
+          ["F", "向右为正的水平外力，单位 N"],
+          ["μ", "动摩擦因数"],
+          ["a", "由合力和质量共同决定"]
+        ],
+        controls: {
+          mass: { label: "质量 m", min: 0.5, max: 10, step: 0.1, value: 3, unit: "kg" },
+          force: { label: "外力 F", min: -30, max: 30, step: 1, value: 14, unit: "N" },
+          friction: { label: "摩擦因数 μ", min: 0, max: 0.8, step: 0.01, value: 0.12, unit: "" },
+          velocity: { label: "初速度 v₀", min: -10, max: 10, step: 0.2, value: 0, unit: "m/s" }
+        }
+      },
+      projectile: {
+        title: "斜抛运动",
+        equation: "x = v₀x t,  y = v₀y t - 1/2 gt²",
+        explain: "忽略空气阻力时，水平方向没有合力，所以速度保持不变；竖直方向只受重力，加速度恒为 -g。两种运动叠加形成抛物线。",
+        vars: [
+          ["v₀", "初速度大小，单位 m/s"],
+          ["θ", "发射角，决定水平和竖直分量"],
+          ["g", "重力加速度"],
+          ["y", "竖直高度，落地时回到 0"]
+        ],
+        controls: {
+          speed: { label: "初速度 v₀", min: 4, max: 36, step: 1, value: 20, unit: "m/s" },
+          angle: { label: "发射角 θ", min: 10, max: 80, step: 1, value: 42, unit: "°" },
+          gravity: { label: "重力加速度 g", min: 1, max: 20, step: 0.1, value: 9.8, unit: "m/s²" },
+          mass: { label: "质量 m", min: 0.5, max: 10, step: 0.1, value: 2, unit: "kg" }
+        }
+      },
+      spring: {
+        title: "弹簧振子",
+        equation: "F = -kx - cv,  a = F / m",
+        explain: "弹簧力总是指向平衡位置，位移越大，回复力越大。阻尼力与速度方向相反，会逐渐带走机械能，让振动幅度变小。",
+        vars: [
+          ["k", "弹簧劲度系数，越大越硬"],
+          ["c", "阻尼系数，越大衰减越快"],
+          ["x", "相对平衡位置的位移"],
+          ["F", "回复力与阻尼力的合力"]
+        ],
+        controls: {
+          mass: { label: "质量 m", min: 0.5, max: 8, step: 0.1, value: 2.5, unit: "kg" },
+          stiffness: { label: "劲度系数 k", min: 2, max: 80, step: 1, value: 24, unit: "N/m" },
+          damping: { label: "阻尼 c", min: 0, max: 8, step: 0.1, value: 0.8, unit: "N·s/m" },
+          displacement: { label: "初位移 x₀", min: -4, max: 4, step: 0.1, value: 2.6, unit: "m" }
+        }
+      }
+    };
+
+    let activeScene = "force";
+    let values = {};
+    let state = {};
+    let trail = [];
+    let running = true;
+    let slowMotion = false;
+    let lastTime = performance.now();
+
+    function setDefaults() {
+      values = {};
+      Object.entries(scenes[activeScene].controls).forEach(([key, control]) => {
+        values[key] = control.value;
+      });
+    }
+
+    function resetState() {
+      const now = performance.now();
+      if (activeScene === "force") {
+        state = { t: 0, x: -5, y: 0, vx: values.velocity, vy: 0, ax: 0, ay: 0 };
+      }
+      if (activeScene === "projectile") {
+        const radians = values.angle * Math.PI / 180;
+        state = {
+          t: 0,
+          x: 0,
+          y: 0,
+          vx: values.speed * Math.cos(radians),
+          vy: values.speed * Math.sin(radians),
+          ax: 0,
+          ay: -values.gravity
+        };
+      }
+      if (activeScene === "spring") {
+        state = { t: 0, x: values.displacement, y: 0, vx: 0, vy: 0, ax: 0, ay: 0 };
+      }
+      trail = [];
+      lastTime = now;
+      updateReadout();
+      draw();
+    }
+
+    function renderControls() {
+      const scene = scenes[activeScene];
+      sceneTitle.textContent = scene.title;
+      equationEl.textContent = scene.equation;
+      explainEl.textContent = scene.explain;
+      variableTable.innerHTML = scene.vars.map(([name, text]) => (
+        `<tr><th>${name}</th><td>${text}</td></tr>`
+      )).join("");
+
+      controlsEl.innerHTML = Object.entries(scene.controls).map(([key, control]) => `
+        <div class="control">
+          <label for="${key}">
+            <span>${control.label}</span>
+            <strong id="${key}Value">${control.value}${control.unit}</strong>
+          </label>
+          <input id="${key}" data-key="${key}" type="range" min="${control.min}" max="${control.max}" step="${control.step}" value="${control.value}">
+        </div>
+      `).join("");
+
+      controlsEl.querySelectorAll("input").forEach(input => {
+        input.addEventListener("input", event => {
+          const key = event.target.dataset.key;
+          values[key] = Number(event.target.value);
+          document.getElementById(`${key}Value`).textContent = `${format(values[key])}${scene.controls[key].unit}`;
+          resetState();
+        });
+      });
+    }
+
+    function physics(dt) {
+      if (activeScene === "force") {
+        const normal = values.mass * 9.8;
+        let frictionForce = 0;
+        if (Math.abs(state.vx) > 0.03) {
+          frictionForce = -Math.sign(state.vx) * values.friction * normal;
+        } else if (Math.abs(values.force) <= values.friction * normal) {
+          frictionForce = -values.force;
+          state.vx = 0;
+        } else {
+          frictionForce = -Math.sign(values.force) * values.friction * normal;
+        }
+        const netForce = values.force + frictionForce;
+        state.ax = netForce / values.mass;
+        state.vx += state.ax * dt;
+        state.x += state.vx * dt;
+        if (state.x > 8 || state.x < -8) {
+          state.x = Math.max(-8, Math.min(8, state.x));
+          state.vx *= -0.35;
+        }
+      }
+
+      if (activeScene === "projectile") {
+        state.ay = -values.gravity;
+        state.vy += state.ay * dt;
+        state.x += state.vx * dt;
+        state.y += state.vy * dt;
+        if (state.y < 0 && state.t > 0.08) {
+          state.y = 0;
+          state.vy *= -0.45;
+          state.vx *= 0.78;
+          if (Math.abs(state.vy) < 1.2) {
+            state.vy = 0;
+          }
+        }
+        if (state.x > 32 || (state.y === 0 && Math.abs(state.vx) < 0.25 && state.t > 1)) {
+          resetState();
+          return;
+        }
+      }
+
+      if (activeScene === "spring") {
+        const force = -values.stiffness * state.x - values.damping * state.vx;
+        state.ax = force / values.mass;
+        state.vx += state.ax * dt;
+        state.x += state.vx * dt;
+      }
+
+      state.t += dt;
+      trail.push({ x: state.x, y: state.y });
+      if (trail.length > 360) {
+        trail.shift();
+      }
+      updateReadout();
+    }
+
+    function updateReadout() {
+      const speed = activeScene === "projectile"
+        ? Math.hypot(state.vx || 0, state.vy || 0)
+        : state.vx || 0;
+      const accel = activeScene === "projectile"
+        ? values.gravity
+        : state.ax || 0;
+      const position = activeScene === "projectile"
+        ? `(${format(state.x || 0)}, ${format(state.y || 0)}) m`
+        : `${format(state.x || 0)} m`;
+      readouts.time.textContent = `${format(state.t || 0)} s`;
+      readouts.position.textContent = position;
+      readouts.velocity.textContent = `${format(speed)} m/s`;
+      readouts.accel.textContent = `${format(accel)} m/s²`;
+    }
+
+    function draw() {
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+      drawGrid(width, height);
+      if (activeScene === "force") drawForceScene(width, height);
+      if (activeScene === "projectile") drawProjectileScene(width, height);
+      if (activeScene === "spring") drawSpringScene(width, height);
+    }
+
+    function drawGrid(width, height) {
+      ctx.fillStyle = "#fbfdff";
+      ctx.fillRect(0, 0, width, height);
+      ctx.strokeStyle = "#e7edf2";
+      ctx.lineWidth = 1;
+      for (let x = 0; x <= width; x += 60) {
+        line(x, 0, x, height);
+      }
+      for (let y = 0; y <= height; y += 60) {
+        line(0, y, width, y);
+      }
+    }
+
+    function drawForceScene(width, height) {
+      const ground = height * 0.68;
+      const scale = 56;
+      const originX = width / 2;
+      const carX = originX + state.x * scale;
+      drawGround(ground, width);
+      drawTrail(p => ({ x: originX + p.x * scale, y: ground - 38 }));
+      drawCar(carX, ground - 52, 112, 58, "#f0b84d");
+      drawArrow(carX, ground - 115, carX + state.vx * 16, ground - 115, "#2364aa", "v");
+      drawArrow(carX, ground - 155, carX + values.force * 5, ground - 155, "#c9413a", "ΣF");
+      drawAxis(originX, ground + 48, scale, -8, 8, "x / m");
+    }
+
+    function drawProjectileScene(width, height) {
+      const ground = height * 0.78;
+      const originX = 90;
+      const scale = 26;
+      drawGround(ground, width);
+      drawTrail(p => ({ x: originX + p.x * scale, y: ground - p.y * scale }));
+      const ball = { x: originX + state.x * scale, y: ground - state.y * scale };
+      drawBall(ball.x, ball.y, 22, "#d95d4f");
+      drawArrow(ball.x, ball.y, ball.x + state.vx * 3.2, ball.y - state.vy * 3.2, "#2364aa", "v");
+      drawArrow(ball.x + 46, ball.y - 8, ball.x + 46, ball.y + values.gravity * 5, "#c9413a", "mg");
+      drawAxis(originX, ground + 48, scale, 0, 32, "x / m");
+    }
+
+    function drawSpringScene(width, height) {
+      const centerY = height * 0.55;
+      const wallX = width * 0.18;
+      const scale = 70;
+      const restX = width * 0.55;
+      const blockX = restX + state.x * scale;
+      drawTrack(centerY + 58, width);
+      drawWall(wallX, centerY);
+      drawSpring(wallX + 18, centerY, blockX - 58, centerY, 14, 12);
+      drawBlock(blockX - 54, centerY - 42, 108, 84, "#73b7a5");
+      drawTrail(p => ({ x: restX + p.x * scale, y: centerY + 88 }));
+      drawArrow(blockX, centerY - 82, blockX + state.vx * 22, centerY - 82, "#2364aa", "v");
+      drawArrow(blockX, centerY - 122, blockX + state.ax * 18, centerY - 122, "#c9413a", "F");
+      ctx.strokeStyle = "#bd741f";
+      ctx.setLineDash([8, 8]);
+      line(restX, centerY - 118, restX, centerY + 115);
+      ctx.setLineDash([]);
+      label("平衡位置", restX + 10, centerY + 112, "#8a5a19");
+    }
+
+    function drawGround(y, width) {
+      ctx.strokeStyle = "#52606d";
+      ctx.lineWidth = 3;
+      line(40, y, width - 40, y);
+      ctx.fillStyle = "#e8eee8";
+      ctx.fillRect(40, y + 3, width - 80, 35);
+    }
+
+    function drawTrack(y, width) {
+      ctx.strokeStyle = "#52606d";
+      ctx.lineWidth = 3;
+      line(60, y, width - 60, y);
+      ctx.strokeStyle = "#d8e0e7";
+      ctx.lineWidth = 2;
+      line(60, y + 20, width - 60, y + 20);
+    }
+
+    function drawWall(x, y) {
+      ctx.fillStyle = "#51606d";
+      ctx.fillRect(x - 16, y - 110, 28, 220);
+      ctx.strokeStyle = "#364652";
+      for (let i = -100; i < 110; i += 18) {
+        line(x - 20, y + i, x + 14, y + i - 18);
+      }
+    }
+
+    function drawCar(x, y, w, h, color) {
+      drawBlock(x - w / 2, y - h / 2, w, h, color);
+      drawBall(x - 34, y + h / 2 + 7, 12, "#26313a");
+      drawBall(x + 34, y + h / 2 + 7, 12, "#26313a");
+    }
+
+    function drawBlock(x, y, w, h, color) {
+      ctx.fillStyle = color;
+      ctx.strokeStyle = "#25313c";
+      ctx.lineWidth = 3;
+      roundRect(x, y, w, h, 8);
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    function drawBall(x, y, radius, color) {
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = "#25313c";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    function drawSpring(x1, y1, x2, y2, turns, amp) {
+      ctx.strokeStyle = "#2364aa";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      const length = x2 - x1;
+      for (let i = 1; i <= turns * 2; i++) {
+        const x = x1 + (length * i) / (turns * 2);
+        const y = y1 + (i % 2 === 0 ? -amp : amp);
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    function drawTrail(mapper) {
+      if (trail.length < 2) return;
+      ctx.strokeStyle = "#1b7f5f";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      trail.forEach((point, index) => {
+        const p = mapper(point);
+        if (index === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.stroke();
+    }
+
+    function drawAxis(originX, y, scale, min, max, text) {
+      ctx.strokeStyle = "#8998a6";
+      ctx.lineWidth = 2;
+      line(originX + min * scale, y, originX + max * scale, y);
+      for (let i = min; i <= max; i += 2) {
+        const x = originX + i * scale;
+        line(x, y - 7, x, y + 7);
+        label(String(i), x - 8, y + 28, "#607080");
+      }
+      label(text, originX + max * scale - 48, y - 16, "#607080");
+    }
+
+    function drawArrow(x1, y1, x2, y2, color, text) {
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const length = Math.hypot(dx, dy);
+      if (length < 10) {
+        label(`${text}≈0`, x1 + 10, y1 - 8, color);
+        return;
+      }
+      const angle = Math.atan2(dy, dx);
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - 15 * Math.cos(angle - Math.PI / 6), y2 - 15 * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(x2 - 15 * Math.cos(angle + Math.PI / 6), y2 - 15 * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+      label(text, x2 + 8, y2 - 8, color);
+    }
+
+    function line(x1, y1, x2, y2) {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    function label(text, x, y, color) {
+      ctx.fillStyle = color;
+      ctx.font = "700 18px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+      ctx.fillText(text, x, y);
+    }
+
+    function roundRect(x, y, w, h, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.arcTo(x + w, y, x + w, y + h, radius);
+      ctx.arcTo(x + w, y + h, x, y + h, radius);
+      ctx.arcTo(x, y + h, x, y, radius);
+      ctx.arcTo(x, y, x + w, y, radius);
+      ctx.closePath();
+    }
+
+    function format(value) {
+      return Number(value).toFixed(Math.abs(value) >= 10 ? 1 : 2);
+    }
+
+    function tick(now) {
+      const elapsed = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      if (running) {
+        const factor = slowMotion ? 0.28 : 1;
+        physics(elapsed * factor);
+      }
+      draw();
+      requestAnimationFrame(tick);
+    }
+
+    document.querySelectorAll(".scene-tab").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".scene-tab").forEach(tab => tab.classList.remove("active"));
+        button.classList.add("active");
+        activeScene = button.dataset.scene;
+        setDefaults();
+        renderControls();
+        resetState();
+      });
+    });
+
+    playPause.addEventListener("click", () => {
+      running = !running;
+      playPause.textContent = running ? "Ⅱ" : "▶";
+    });
+
+    stepButton.addEventListener("click", () => {
+      physics(1 / 30);
+      draw();
+    });
+
+    resetButton.addEventListener("click", resetState);
+
+    slowButton.addEventListener("click", () => {
+      slowMotion = !slowMotion;
+      slowButton.style.background = slowMotion ? "#2364aa" : "#ffffff";
+      slowButton.style.color = slowMotion ? "#ffffff" : "#17212b";
+    });
+
+    setDefaults();
+    renderControls();
+    resetState();
+    requestAnimationFrame(tick);
+  </script>
+</body>
+</html>
