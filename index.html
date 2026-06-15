@@ -471,7 +471,9 @@
           speed: { label: "初速度 v₀", min: 4, max: 36, step: 1, value: 20, unit: "m/s" },
           angle: { label: "发射角 θ", min: 10, max: 80, step: 1, value: 42, unit: "°" },
           gravity: { label: "重力加速度 g", min: 1, max: 20, step: 0.1, value: 9.8, unit: "m/s²" },
-          mass: { label: "质量 m", min: 0.5, max: 10, step: 0.1, value: 2, unit: "kg" }
+          mass: { label: "质量 m", min: 0.5, max: 10, step: 0.1, value: 2, unit: "kg" },
+          maxTime: { label: "时间上限", min: 1, max: 12, step: 0.5, value: 6, unit: "s" },
+          limit: { label: "水平边界 x", min: 8, max: 36, step: 1, value: 28, unit: "m" }
         }
       },
       spring: {
@@ -488,7 +490,9 @@
           mass: { label: "质量 m", min: 0.5, max: 8, step: 0.1, value: 2.5, unit: "kg" },
           stiffness: { label: "劲度系数 k", min: 2, max: 80, step: 1, value: 24, unit: "N/m" },
           damping: { label: "阻尼 c", min: 0, max: 8, step: 0.1, value: 0.8, unit: "N·s/m" },
-          displacement: { label: "初位移 x₀", min: -4, max: 4, step: 0.1, value: 2.6, unit: "m" }
+          displacement: { label: "初位移 x₀", min: -4, max: 4, step: 0.1, value: 2.6, unit: "m" },
+          maxTime: { label: "时间上限", min: 2, max: 30, step: 0.5, value: 12, unit: "s" },
+          limit: { label: "位移边界 ±x", min: 1, max: 6, step: 0.5, value: 5, unit: "m" }
         }
       }
     };
@@ -522,11 +526,13 @@
           vx: values.speed * Math.cos(radians),
           vy: values.speed * Math.sin(radians),
           ax: 0,
-          ay: -values.gravity
+          ay: -values.gravity,
+          stopped: false,
+          stopReason: ""
         };
       }
       if (activeScene === "spring") {
-        state = { t: 0, x: values.displacement, y: 0, vx: 0, vy: 0, ax: 0, ay: 0 };
+        state = { t: 0, x: values.displacement, y: 0, vx: 0, vy: 0, ax: 0, ay: 0, stopped: false, stopReason: "" };
       }
       trail = [];
       lastTime = now;
@@ -597,15 +603,11 @@
         state.y += state.vy * dt;
         if (state.y < 0 && state.t > 0.08) {
           state.y = 0;
-          state.vy *= -0.45;
-          state.vx *= 0.78;
-          if (Math.abs(state.vy) < 1.2) {
-            state.vy = 0;
-          }
+          stopMotion("落地停止");
         }
-        if (state.x > 32 || (state.y === 0 && Math.abs(state.vx) < 0.25 && state.t > 1)) {
-          resetState();
-          return;
+        if (state.x >= values.limit && !state.stopped) {
+          state.x = values.limit;
+          stopMotion(`到达 ${format(values.limit)} m 边界`);
         }
       }
 
@@ -614,10 +616,14 @@
         state.ax = force / values.mass;
         state.vx += state.ax * dt;
         state.x += state.vx * dt;
+        if (Math.abs(state.x) >= values.limit) {
+          state.x = Math.sign(state.x || state.vx || 1) * values.limit;
+          stopMotion(`到达 ${format(values.limit)} m 边界`);
+        }
       }
 
       state.t += dt;
-      if (activeScene === "force" && state.t >= values.maxTime && !state.stopped) {
+      if (state.t >= values.maxTime && !state.stopped) {
         state.t = values.maxTime;
         stopMotion(`达到 ${format(values.maxTime)} s`);
       }
@@ -709,12 +715,16 @@
       const originX = 90;
       const scale = 26;
       drawGround(ground, width);
+      drawBoundary(originX + values.limit * scale, ground, "边界");
       drawTrail(p => ({ x: originX + p.x * scale, y: ground - p.y * scale }));
       const ball = { x: originX + state.x * scale, y: ground - state.y * scale };
       drawBall(ball.x, ball.y, 22, "#d95d4f");
       drawArrow(ball.x, ball.y, ball.x + state.vx * 3.2, ball.y - state.vy * 3.2, "#2364aa", "v");
       drawArrow(ball.x + 46, ball.y - 8, ball.x + 46, ball.y + values.gravity * 5, "#c9413a", "mg");
       drawAxis(originX, ground + 48, scale, 0, 32, "x / m");
+      if (state.stopped) {
+        label(`已停止：${state.stopReason}`, 72, ground - 250, "#c9413a");
+      }
     }
 
     function drawSpringScene(width, height) {
@@ -725,6 +735,8 @@
       const blockX = restX + state.x * scale;
       drawTrack(centerY + 58, width);
       drawWall(wallX, centerY);
+      drawBoundary(restX - values.limit * scale, centerY + 58, "-边界");
+      drawBoundary(restX + values.limit * scale, centerY + 58, "+边界");
       drawSpring(wallX + 18, centerY, blockX - 58, centerY, 14, 12);
       drawBlock(blockX - 54, centerY - 42, 108, 84, "#73b7a5");
       drawTrail(p => ({ x: restX + p.x * scale, y: centerY + 88 }));
@@ -735,6 +747,9 @@
       line(restX, centerY - 118, restX, centerY + 115);
       ctx.setLineDash([]);
       label("平衡位置", restX + 10, centerY + 112, "#8a5a19");
+      if (state.stopped) {
+        label(`已停止：${state.stopReason}`, 72, centerY - 160, "#c9413a");
+      }
     }
 
     function drawGround(y, width) {
