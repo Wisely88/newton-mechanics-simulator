@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>牛顿力学模拟器</title>
+  <title>牛顿力学教学模拟器</title>
   <style>
     :root {
       color-scheme: light;
-      --ink: #17212b;
-      --muted: #607080;
-      --line: #d8e0e7;
-      --paper: #f7f9fb;
+      --ink: #182430;
+      --muted: #637282;
+      --line: #d8e1e8;
       --panel: #ffffff;
+      --soft: #f3f7fa;
       --blue: #2364aa;
       --green: #1b7f5f;
       --red: #c9413a;
-      --amber: #bd741f;
-      --shadow: 0 16px 42px rgba(26, 43, 62, .11);
+      --amber: #b66a15;
+      --shadow: 0 14px 34px rgba(23, 36, 49, .1);
     }
 
     * {
@@ -28,110 +28,146 @@
       min-height: 100vh;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
       color: var(--ink);
-      background: linear-gradient(180deg, #eef4f8 0%, #f8fafb 42%, #eef2f0 100%);
+      background: #eef4f7;
     }
 
     button,
-    input,
-    select {
+    input {
       font: inherit;
     }
 
     .app {
-      width: min(1440px, 100%);
+      width: min(1240px, 100%);
       margin: 0 auto;
       padding: 22px;
     }
 
     header {
       display: flex;
-      align-items: end;
       justify-content: space-between;
+      align-items: end;
       gap: 18px;
       margin-bottom: 16px;
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(28px, 4vw, 48px);
-      line-height: 1.05;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.08;
       letter-spacing: 0;
     }
 
     .subtitle {
       margin: 8px 0 0;
       color: var(--muted);
-      font-size: 16px;
-      max-width: 760px;
+      line-height: 1.6;
     }
 
-    .top-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .icon-button,
-    .text-button {
-      border: 1px solid var(--line);
-      background: var(--panel);
-      color: var(--ink);
-      min-height: 40px;
-      border-radius: 8px;
-      cursor: pointer;
-      box-shadow: 0 4px 14px rgba(23, 33, 43, .06);
-    }
-
-    .icon-button {
-      width: 42px;
-      display: grid;
-      place-items: center;
-      font-size: 19px;
-      font-weight: 700;
-    }
-
-    .text-button {
-      padding: 0 14px;
-      font-weight: 700;
-    }
-
-    .icon-button:hover,
-    .text-button:hover,
-    .scene-tab:hover {
-      border-color: #a9bac8;
-      transform: translateY(-1px);
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(280px, 350px) minmax(420px, 1fr) minmax(300px, 380px);
-      gap: 16px;
-      align-items: start;
-    }
-
+    .stage-card,
     .panel {
-      background: rgba(255, 255, 255, .92);
+      background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 8px;
       box-shadow: var(--shadow);
       overflow: hidden;
     }
 
+    .stage-head,
     .panel-head {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 13px 16px;
       border-bottom: 1px solid var(--line);
-      background: rgba(250, 252, 253, .88);
+      background: rgba(248, 251, 253, .92);
     }
 
     h2 {
       margin: 0;
-      font-size: 17px;
+      font-size: 18px;
       line-height: 1.2;
+    }
+
+    .stage-wrap {
+      position: relative;
+      aspect-ratio: 16 / 8.8;
+      min-height: 430px;
+      background: #fbfdff;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .readout {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      width: min(820px, calc(100% - 28px));
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .metric {
+      min-height: 58px;
+      padding: 8px 10px;
+      border: 1px solid rgba(216, 225, 232, .82);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .9);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric b {
+      display: block;
+      margin-top: 4px;
+      font-size: 15px;
+      overflow-wrap: anywhere;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 750;
+      color: var(--ink);
+    }
+
+    .btn.primary {
+      color: #fff;
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      border-color: #9fb2c3;
+    }
+
+    .below {
+      display: grid;
+      grid-template-columns: minmax(320px, .9fr) minmax(420px, 1.1fr);
+      gap: 16px;
+      margin-top: 16px;
+      align-items: start;
     }
 
     .panel-body {
@@ -146,14 +182,13 @@
     }
 
     .scene-tab {
+      min-height: 44px;
       border: 1px solid var(--line);
       background: #fff;
-      color: var(--muted);
       border-radius: 8px;
-      min-height: 44px;
-      padding: 0 8px;
       cursor: pointer;
-      font-weight: 750;
+      font-weight: 800;
+      color: var(--muted);
     }
 
     .scene-tab.active {
@@ -162,130 +197,88 @@
       border-color: var(--blue);
     }
 
-    .control {
+    .input-grid {
       display: grid;
-      gap: 8px;
-      padding: 12px 0;
-      border-bottom: 1px solid #edf1f4;
-    }
-
-    .control:last-child {
-      border-bottom: 0;
-    }
-
-    .control label {
-      display: flex;
-      justify-content: space-between;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
-      font-size: 14px;
-      color: var(--muted);
     }
 
-    .control strong {
-      color: var(--ink);
-      white-space: nowrap;
-    }
-
-    input[type="range"] {
-      width: 100%;
-      accent-color: var(--blue);
-    }
-
-    .stage-panel {
-      min-width: 0;
-    }
-
-    .canvas-wrap {
-      position: relative;
-      background: #fbfdff;
-      min-height: 540px;
-      aspect-ratio: 16 / 10;
-    }
-
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    .readout {
-      position: absolute;
-      left: 14px;
-      top: 14px;
+    .field {
       display: grid;
-      grid-template-columns: repeat(5, minmax(74px, 1fr));
-      gap: 8px;
-      width: min(520px, calc(100% - 28px));
-      pointer-events: none;
+      gap: 6px;
     }
 
-    .metric {
-      background: rgba(255, 255, 255, .88);
-      border: 1px solid rgba(216, 224, 231, .8);
+    label {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      height: 42px;
+      border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 8px 10px;
-      min-height: 58px;
+      padding: 0 11px;
+      background: #fff;
+      color: var(--ink);
     }
 
-    .metric span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
+    input[type="number"]:focus {
+      outline: 2px solid rgba(35, 100, 170, .22);
+      border-color: var(--blue);
     }
 
-    .metric b {
-      display: block;
-      margin-top: 3px;
-      font-size: 16px;
+    .form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
     }
 
-    .formula {
+    .summary {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 8px;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      color: #324353;
+      line-height: 1.65;
+      min-height: 76px;
+    }
+
+    .analysis-grid {
       display: grid;
-      gap: 14px;
+      gap: 12px;
     }
 
-    .equation {
+    .formula-box {
       border-left: 4px solid var(--blue);
-      background: #f4f8fc;
+      background: #f2f7fc;
       border-radius: 0 8px 8px 0;
       padding: 12px 14px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 17px;
-      line-height: 1.55;
+      font-size: 16px;
+      line-height: 1.6;
       overflow-wrap: anywhere;
     }
 
-    .explain {
-      color: #314252;
-      line-height: 1.65;
+    .explain,
+    .life {
       margin: 0;
-      font-size: 15px;
+      line-height: 1.7;
+      color: #324353;
     }
 
-    .small-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-
-    .small-table th,
-    .small-table td {
-      text-align: left;
-      padding: 9px 8px;
-      border-bottom: 1px solid #edf1f4;
-      vertical-align: top;
-    }
-
-    .small-table th {
-      color: var(--muted);
-      font-weight: 700;
-      width: 34%;
+    .life {
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
     }
 
     .legend {
       display: flex;
+      gap: 12px;
       flex-wrap: wrap;
-      gap: 10px 14px;
       color: var(--muted);
       font-size: 13px;
     }
@@ -299,53 +292,46 @@
       vertical-align: middle;
     }
 
-    .blue-line {
+    .blue {
       background: var(--blue);
     }
 
-    .green-line {
+    .green {
       background: var(--green);
     }
 
-    .red-line {
+    .red {
       background: var(--red);
     }
 
-    .amber-line {
-      background: var(--amber);
-    }
-
-    @media (max-width: 1100px) {
-      .layout {
-        grid-template-columns: 320px 1fr;
-      }
-
-      .formula-panel {
-        grid-column: 1 / -1;
-      }
-    }
-
-    @media (max-width: 760px) {
-      .app {
-        padding: 14px;
-      }
-
+    @media (max-width: 920px) {
       header {
         align-items: stretch;
         flex-direction: column;
       }
 
-      .layout {
+      .below {
         grid-template-columns: 1fr;
-      }
-
-      .canvas-wrap {
-        min-height: 420px;
-        aspect-ratio: 4 / 3;
       }
 
       .readout {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app {
+        padding: 14px;
+      }
+
+      .stage-wrap {
+        min-height: 360px;
+        aspect-ratio: 1 / 1;
+      }
+
+      .input-grid,
+      .scene-tabs {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -354,21 +340,41 @@
   <main class="app">
     <header>
       <div>
-        <h1>牛顿力学模拟器</h1>
-        <p class="subtitle">拖动参数，观察力、加速度、速度和位置怎样一起变化。</p>
+        <h1>牛顿力学教学模拟器</h1>
+        <p class="subtitle">先手动填写参数，再点击开始。模拟物体碰到画布边界或达到时间条件会自动停止。</p>
       </div>
-      <div class="top-actions" aria-label="模拟控制">
-        <button class="icon-button" id="playPause" title="暂停或继续">Ⅱ</button>
-        <button class="icon-button" id="step" title="单步推进">›</button>
-        <button class="icon-button" id="reset" title="重置">↺</button>
-        <button class="text-button" id="slow" title="切换慢动作">慢动作</button>
+      <div class="toolbar" aria-label="模拟控制">
+        <button class="btn primary" id="startButton">开始</button>
+        <button class="btn" id="pauseButton">暂停</button>
+        <button class="btn" id="resetButton">重置</button>
       </div>
     </header>
 
-    <section class="layout">
+    <section class="stage-card">
+      <div class="stage-head">
+        <h2 id="sceneTitle">水平受力</h2>
+        <div class="legend">
+          <span><i class="blue"></i>速度</span>
+          <span><i class="red"></i>合力/重力</span>
+          <span><i class="green"></i>轨迹</span>
+        </div>
+      </div>
+      <div class="stage-wrap">
+        <canvas id="stage" width="1200" height="660" aria-label="模拟画布"></canvas>
+        <div class="readout">
+          <div class="metric"><span>时间 t</span><b id="timeValue">0.00 s</b></div>
+          <div class="metric"><span>位置</span><b id="positionValue">0.00 m</b></div>
+          <div class="metric"><span>速度 v</span><b id="velocityValue">0.00 m/s</b></div>
+          <div class="metric"><span>加速度 a</span><b id="accelValue">0.00 m/s²</b></div>
+          <div class="metric"><span>状态</span><b id="statusValue">等待参数</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="below">
       <aside class="panel">
         <div class="panel-head">
-          <h2>实验设置</h2>
+          <h2>参数设置</h2>
         </div>
         <div class="panel-body">
           <div class="scene-tabs" role="tablist" aria-label="实验场景">
@@ -376,58 +382,42 @@
             <button class="scene-tab" data-scene="projectile">斜抛运动</button>
             <button class="scene-tab" data-scene="spring">弹簧振子</button>
           </div>
-          <div id="controls"></div>
+          <div class="input-grid" id="inputs"></div>
+          <div class="form-actions">
+            <button class="btn primary" id="startButtonBottom">开始模拟</button>
+            <button class="btn" id="clearButton">参数归零</button>
+          </div>
+          <div class="summary" id="paramSummary">填写参数后点击开始，这里会显示本次模拟使用的参数。</div>
         </div>
       </aside>
 
-      <section class="panel stage-panel">
+      <section class="panel">
         <div class="panel-head">
-          <h2 id="sceneTitle">水平受力</h2>
-          <div class="legend">
-            <span><i class="blue-line"></i>速度</span>
-            <span><i class="red-line"></i>合力</span>
-            <span><i class="green-line"></i>轨迹</span>
-          </div>
+          <h2>公式解析与生活场景</h2>
         </div>
-        <div class="canvas-wrap">
-          <canvas id="stage" width="1200" height="750" aria-label="力学模拟画布"></canvas>
-          <div class="readout">
-            <div class="metric"><span>时间 t</span><b id="timeValue">0.00 s</b></div>
-            <div class="metric"><span>位置</span><b id="positionValue">0.00 m</b></div>
-            <div class="metric"><span>速度 v</span><b id="velocityValue">0.00 m/s</b></div>
-            <div class="metric"><span>加速度 a</span><b id="accelValue">0.00 m/s²</b></div>
-            <div class="metric"><span>状态</span><b id="statusValue">运行中</b></div>
-          </div>
+        <div class="panel-body analysis-grid">
+          <div class="formula-box" id="formulaBox"></div>
+          <p class="explain" id="formulaExplain"></p>
+          <p class="life" id="lifeExample"></p>
         </div>
       </section>
-
-      <aside class="panel formula-panel">
-        <div class="panel-head">
-          <h2>公式讲解</h2>
-        </div>
-        <div class="panel-body formula">
-          <div class="equation" id="equation"></div>
-          <p class="explain" id="explain"></p>
-          <table class="small-table" aria-label="变量说明">
-            <tbody id="variableTable"></tbody>
-          </table>
-        </div>
-      </aside>
     </section>
   </main>
 
   <script>
     const canvas = document.getElementById("stage");
     const ctx = canvas.getContext("2d");
-    const controlsEl = document.getElementById("controls");
+    const inputsEl = document.getElementById("inputs");
     const sceneTitle = document.getElementById("sceneTitle");
-    const equationEl = document.getElementById("equation");
-    const explainEl = document.getElementById("explain");
-    const variableTable = document.getElementById("variableTable");
-    const playPause = document.getElementById("playPause");
-    const stepButton = document.getElementById("step");
-    const resetButton = document.getElementById("reset");
-    const slowButton = document.getElementById("slow");
+    const formulaBox = document.getElementById("formulaBox");
+    const formulaExplain = document.getElementById("formulaExplain");
+    const lifeExample = document.getElementById("lifeExample");
+    const paramSummary = document.getElementById("paramSummary");
+    const startButton = document.getElementById("startButton");
+    const startButtonBottom = document.getElementById("startButtonBottom");
+    const pauseButton = document.getElementById("pauseButton");
+    const resetButton = document.getElementById("resetButton");
+    const clearButton = document.getElementById("clearButton");
 
     const readouts = {
       time: document.getElementById("timeValue"),
@@ -440,91 +430,107 @@
     const scenes = {
       force: {
         title: "水平受力",
-        equation: "ΣF = ma  →  a = (F - μmg·方向) / m",
-        explain: "小车受到水平推力、重力、支持力和摩擦力。垂直方向力互相抵消，水平方向的合力决定加速度。质量越大，同样的合力带来的加速度越小。",
-        vars: [
-          ["m", "质量，单位 kg"],
-          ["F", "向右为正的水平外力，单位 N"],
-          ["μ", "动摩擦因数"],
-          ["a", "由合力和质量共同决定"]
-        ],
-        controls: {
-          mass: { label: "质量 m", min: 0.5, max: 10, step: 0.1, value: 3, unit: "kg" },
-          force: { label: "外力 F", min: -30, max: 30, step: 1, value: 14, unit: "N" },
-          friction: { label: "摩擦因数 μ", min: 0, max: 0.8, step: 0.01, value: 0.12, unit: "" },
-          velocity: { label: "初速度 v₀", min: -10, max: 10, step: 0.2, value: 0, unit: "m/s" },
-          maxTime: { label: "时间上限", min: 2, max: 20, step: 0.5, value: 8, unit: "s" },
-          limit: { label: "位置边界 ±x", min: 2, max: 8, step: 0.5, value: 7.5, unit: "m" }
-        }
+        formula: "ΣF = ma；a = (F - f) / m；f = μmg",
+        explain: "水平方向的合力决定小车加速度。质量越大，同样的外力产生的加速度越小；摩擦力与运动方向相反，会让小车更快停下。",
+        life: "生活场景：推购物车、推讲台上的小车、汽车在粗糙路面上加速，都可以用这个模型理解。",
+        fields: [
+          { key: "mass", label: "质量 m (kg)", step: "0.1" },
+          { key: "force", label: "外力 F (N)", step: "0.1" },
+          { key: "friction", label: "摩擦因数 μ", step: "0.01" },
+          { key: "velocity", label: "初速度 v₀ (m/s)", step: "0.1" },
+          { key: "maxTime", label: "模拟时长 (s，0 表示自动)", step: "0.5" }
+        ]
       },
       projectile: {
         title: "斜抛运动",
-        equation: "x = v₀x t,  y = v₀y t - 1/2 gt²",
-        explain: "忽略空气阻力时，水平方向没有合力，所以速度保持不变；竖直方向只受重力，加速度恒为 -g。两种运动叠加形成抛物线。",
-        vars: [
-          ["v₀", "初速度大小，单位 m/s"],
-          ["θ", "发射角，决定水平和竖直分量"],
-          ["g", "重力加速度"],
-          ["y", "竖直高度，落地时回到 0"]
-        ],
-        controls: {
-          speed: { label: "初速度 v₀", min: 4, max: 36, step: 1, value: 20, unit: "m/s" },
-          angle: { label: "发射角 θ", min: 10, max: 80, step: 1, value: 42, unit: "°" },
-          gravity: { label: "重力加速度 g", min: 1, max: 20, step: 0.1, value: 9.8, unit: "m/s²" },
-          mass: { label: "质量 m", min: 0.5, max: 10, step: 0.1, value: 2, unit: "kg" },
-          maxTime: { label: "时间上限", min: 1, max: 12, step: 0.5, value: 6, unit: "s" },
-          limit: { label: "水平边界 x", min: 8, max: 36, step: 1, value: 28, unit: "m" }
-        }
+        formula: "x = v₀cosθ · t；y = h + v₀sinθ · t - 1/2gt²",
+        explain: "忽略空气阻力时，水平方向近似匀速，竖直方向做加速度为 -g 的运动。两种运动叠加后形成抛物线。",
+        life: "生活场景：投篮球、踢足球、喷泉水柱、扔粉笔头，运动轨迹都可以用斜抛运动近似解释。",
+        fields: [
+          { key: "speed", label: "初速度 v₀ (m/s)", step: "0.1" },
+          { key: "angle", label: "发射角 θ (°)", step: "1" },
+          { key: "gravity", label: "重力加速度 g (m/s²)", step: "0.1" },
+          { key: "height", label: "初始高度 h (m)", step: "0.1" },
+          { key: "maxTime", label: "模拟时长 (s，0 表示自动)", step: "0.5" }
+        ]
       },
       spring: {
         title: "弹簧振子",
-        equation: "F = -kx - cv,  a = F / m",
-        explain: "弹簧力总是指向平衡位置，位移越大，回复力越大。阻尼力与速度方向相反，会逐渐带走机械能，让振动幅度变小。",
-        vars: [
-          ["k", "弹簧劲度系数，越大越硬"],
-          ["c", "阻尼系数，越大衰减越快"],
-          ["x", "相对平衡位置的位移"],
-          ["F", "回复力与阻尼力的合力"]
-        ],
-        controls: {
-          mass: { label: "质量 m", min: 0.5, max: 8, step: 0.1, value: 2.5, unit: "kg" },
-          stiffness: { label: "劲度系数 k", min: 2, max: 80, step: 1, value: 24, unit: "N/m" },
-          damping: { label: "阻尼 c", min: 0, max: 8, step: 0.1, value: 0.8, unit: "N·s/m" },
-          displacement: { label: "初位移 x₀", min: -4, max: 4, step: 0.1, value: 2.6, unit: "m" },
-          maxTime: { label: "时间上限", min: 2, max: 30, step: 0.5, value: 12, unit: "s" },
-          limit: { label: "位移边界 ±x", min: 1, max: 6, step: 0.5, value: 5, unit: "m" }
-        }
+        formula: "F = -kx - cv；a = F / m",
+        explain: "弹簧力总是指向平衡位置，位移越大回复力越大。阻尼力与速度方向相反，会逐渐消耗机械能。",
+        life: "生活场景：汽车减震器、弹簧测力计、门吸回弹、蹦床上下振动，都能看到弹簧和阻尼的影子。",
+        fields: [
+          { key: "mass", label: "质量 m (kg)", step: "0.1" },
+          { key: "stiffness", label: "劲度系数 k (N/m)", step: "0.1" },
+          { key: "damping", label: "阻尼 c (N·s/m)", step: "0.1" },
+          { key: "displacement", label: "初位移 x₀ (m)", step: "0.1" },
+          { key: "maxTime", label: "模拟时长 (s，0 表示自动)", step: "0.5" }
+        ]
       }
     };
 
+    const margin = 54;
     let activeScene = "force";
     let values = {};
     let state = {};
     let trail = [];
-    let running = true;
-    let slowMotion = false;
+    let started = false;
+    let running = false;
     let lastTime = performance.now();
 
-    function setDefaults() {
+    function zeroValues() {
       values = {};
-      Object.entries(scenes[activeScene].controls).forEach(([key, control]) => {
-        values[key] = control.value;
+      scenes[activeScene].fields.forEach(field => {
+        values[field.key] = 0;
       });
     }
 
-    function resetState() {
-      const now = performance.now();
+    function renderScene() {
+      const scene = scenes[activeScene];
+      sceneTitle.textContent = scene.title;
+      formulaBox.textContent = scene.formula;
+      formulaExplain.textContent = scene.explain;
+      lifeExample.textContent = scene.life;
+      inputsEl.innerHTML = scene.fields.map(field => `
+        <div class="field">
+          <label for="${field.key}">${field.label}</label>
+          <input id="${field.key}" data-key="${field.key}" type="number" step="${field.step}" value="0" inputmode="decimal">
+        </div>
+      `).join("");
+      inputsEl.querySelectorAll("input").forEach(input => {
+        input.addEventListener("input", () => {
+          values[input.dataset.key] = Number(input.value || 0);
+        });
+      });
+      zeroValues();
+      resetSimulation(false);
+    }
+
+    function readFormValues() {
+      inputsEl.querySelectorAll("input").forEach(input => {
+        values[input.dataset.key] = Number(input.value || 0);
+      });
+    }
+
+    function startSimulation() {
+      readFormValues();
+      started = true;
+      running = true;
+      pauseButton.textContent = "暂停";
+      lastTime = performance.now();
+      trail = [];
+
       if (activeScene === "force") {
         state = { t: 0, x: 0, y: 0, vx: values.velocity, vy: 0, ax: 0, ay: 0, stopped: false, stopReason: "" };
       }
       if (activeScene === "projectile") {
-        const radians = values.angle * Math.PI / 180;
+        const angle = values.angle * Math.PI / 180;
         state = {
           t: 0,
           x: 0,
-          y: 0,
-          vx: values.speed * Math.cos(radians),
-          vy: values.speed * Math.sin(radians),
+          y: Math.max(0, values.height),
+          vx: values.speed * Math.cos(angle),
+          vy: values.speed * Math.sin(angle),
           ax: 0,
           ay: -values.gravity,
           stopped: false,
@@ -534,66 +540,58 @@
       if (activeScene === "spring") {
         state = { t: 0, x: values.displacement, y: 0, vx: 0, vy: 0, ax: 0, ay: 0, stopped: false, stopReason: "" };
       }
-      trail = [];
-      lastTime = now;
+
+      paramSummary.textContent = buildSummary();
       updateReadout();
       draw();
     }
 
-    function renderControls() {
-      const scene = scenes[activeScene];
-      sceneTitle.textContent = scene.title;
-      equationEl.textContent = scene.equation;
-      explainEl.textContent = scene.explain;
-      variableTable.innerHTML = scene.vars.map(([name, text]) => (
-        `<tr><th>${name}</th><td>${text}</td></tr>`
-      )).join("");
+    function resetSimulation(keepStarted) {
+      started = keepStarted;
+      running = false;
+      trail = [];
+      state = { t: 0, x: 0, y: 0, vx: 0, vy: 0, ax: 0, ay: 0, stopped: false, stopReason: "" };
+      pauseButton.textContent = "暂停";
+      paramSummary.textContent = keepStarted ? buildSummary() : "填写参数后点击开始，这里会显示本次模拟使用的参数。";
+      updateReadout();
+      draw();
+    }
 
-      controlsEl.innerHTML = Object.entries(scene.controls).map(([key, control]) => `
-        <div class="control">
-          <label for="${key}">
-            <span>${control.label}</span>
-            <strong id="${key}Value">${control.value}${control.unit}</strong>
-          </label>
-          <input id="${key}" data-key="${key}" type="range" min="${control.min}" max="${control.max}" step="${control.step}" value="${control.value}">
-        </div>
-      `).join("");
-
-      controlsEl.querySelectorAll("input").forEach(input => {
-        input.addEventListener("input", event => {
-          const key = event.target.dataset.key;
-          values[key] = Number(event.target.value);
-          document.getElementById(`${key}Value`).textContent = `${format(values[key])}${scene.controls[key].unit}`;
-          resetState();
-        });
+    function clearInputs() {
+      inputsEl.querySelectorAll("input").forEach(input => {
+        input.value = "0";
       });
+      zeroValues();
+      resetSimulation(false);
+    }
+
+    function buildSummary() {
+      const scene = scenes[activeScene];
+      const parts = scene.fields.map(field => `${field.label.replace(/（.*?）|\(.*?\)/g, "")}: ${format(values[field.key])}`);
+      return `本次模拟：${scene.title}。${parts.join("；")}。`;
     }
 
     function physics(dt) {
-      if (state.stopped) {
-        updateReadout();
-        return;
-      }
+      if (!started || !running || state.stopped) return;
 
       if (activeScene === "force") {
+        if (values.mass <= 0) {
+          stopMotion("质量需大于 0");
+          return;
+        }
         const normal = values.mass * 9.8;
-        let frictionForce = 0;
-        if (Math.abs(state.vx) > 0.03) {
-          frictionForce = -Math.sign(state.vx) * values.friction * normal;
-        } else if (Math.abs(values.force) <= values.friction * normal) {
-          frictionForce = -values.force;
+        let friction = 0;
+        if (Math.abs(state.vx) > 0.02) {
+          friction = -Math.sign(state.vx) * Math.max(0, values.friction) * normal;
+        } else if (Math.abs(values.force) <= Math.max(0, values.friction) * normal) {
+          friction = -values.force;
           state.vx = 0;
         } else {
-          frictionForce = -Math.sign(values.force) * values.friction * normal;
+          friction = -Math.sign(values.force || 1) * Math.max(0, values.friction) * normal;
         }
-        const netForce = values.force + frictionForce;
-        state.ax = netForce / values.mass;
+        state.ax = (values.force + friction) / values.mass;
         state.vx += state.ax * dt;
         state.x += state.vx * dt;
-        if (Math.abs(state.x) >= values.limit) {
-          state.x = Math.sign(state.x || state.vx || values.force || 1) * values.limit;
-          stopMotion(`到达 ${format(values.limit)} m 边界`);
-        }
       }
 
       if (activeScene === "projectile") {
@@ -601,37 +599,45 @@
         state.vy += state.ay * dt;
         state.x += state.vx * dt;
         state.y += state.vy * dt;
-        if (state.y < 0 && state.t > 0.08) {
+        if (state.y <= 0 && state.t > 0.05) {
           state.y = 0;
           stopMotion("落地停止");
-        }
-        if (state.x >= values.limit && !state.stopped) {
-          state.x = values.limit;
-          stopMotion(`到达 ${format(values.limit)} m 边界`);
         }
       }
 
       if (activeScene === "spring") {
+        if (values.mass <= 0) {
+          stopMotion("质量需大于 0");
+          return;
+        }
         const force = -values.stiffness * state.x - values.damping * state.vx;
         state.ax = force / values.mass;
         state.vx += state.ax * dt;
         state.x += state.vx * dt;
-        if (Math.abs(state.x) >= values.limit) {
-          state.x = Math.sign(state.x || state.vx || 1) * values.limit;
-          stopMotion(`到达 ${format(values.limit)} m 边界`);
-        }
       }
 
       state.t += dt;
-      if (state.t >= values.maxTime && !state.stopped) {
+      if (values.maxTime > 0 && state.t >= values.maxTime) {
         state.t = values.maxTime;
-        stopMotion(`达到 ${format(values.maxTime)} s`);
+        stopMotion("达到设定时长");
       }
+      stopIfOutsideCanvas();
       trail.push({ x: state.x, y: state.y });
-      if (trail.length > 360) {
-        trail.shift();
-      }
+      if (trail.length > 320) trail.shift();
       updateReadout();
+    }
+
+    function stopIfOutsideCanvas() {
+      const p = toCanvasPoint(state.x, state.y);
+      if (p.x < margin || p.x > canvas.width - margin || p.y < margin || p.y > canvas.height - margin) {
+        const clamped = fromCanvasPoint(
+          Math.min(canvas.width - margin, Math.max(margin, p.x)),
+          Math.min(canvas.height - margin, Math.max(margin, p.y))
+        );
+        state.x = clamped.x;
+        state.y = clamped.y;
+        stopMotion("到达画布边界");
+      }
     }
 
     function stopMotion(reason) {
@@ -641,147 +647,142 @@
       state.vy = 0;
       state.ax = 0;
       state.ay = 0;
+      running = false;
+      pauseButton.textContent = "继续";
     }
 
     function updateReadout() {
-      const speed = activeScene === "projectile"
-        ? Math.hypot(state.vx || 0, state.vy || 0)
-        : state.vx || 0;
-      const accel = activeScene === "projectile"
-        ? values.gravity
-        : state.ax || 0;
-      const position = activeScene === "projectile"
-        ? `(${format(state.x || 0)}, ${format(state.y || 0)}) m`
-        : `${format(state.x || 0)} m`;
-      readouts.time.textContent = `${format(state.t || 0)} s`;
-      readouts.position.textContent = position;
+      const speed = activeScene === "projectile" ? Math.hypot(state.vx, state.vy) : state.vx;
+      const accel = activeScene === "projectile" ? Math.hypot(state.ax || 0, state.ay || 0) : state.ax;
+      readouts.time.textContent = `${format(state.t)} s`;
+      readouts.position.textContent = activeScene === "projectile"
+        ? `(${format(state.x)}, ${format(state.y)}) m`
+        : `${format(state.x)} m`;
       readouts.velocity.textContent = `${format(speed)} m/s`;
       readouts.accel.textContent = `${format(accel)} m/s²`;
-      readouts.status.textContent = state.stopped ? state.stopReason : "运行中";
+      if (!started) readouts.status.textContent = "等待参数";
+      else readouts.status.textContent = state.stopped ? state.stopReason : (running ? "模拟中" : "已暂停");
     }
 
     function draw() {
-      const width = canvas.width;
-      const height = canvas.height;
-      ctx.clearRect(0, 0, width, height);
-      drawGrid(width, height);
-      if (activeScene === "force") drawForceScene(width, height);
-      if (activeScene === "projectile") drawProjectileScene(width, height);
-      if (activeScene === "spring") drawSpringScene(width, height);
+      drawGrid();
+      if (!started) {
+        drawStartHint();
+        return;
+      }
+      if (activeScene === "force") drawForce();
+      if (activeScene === "projectile") drawProjectile();
+      if (activeScene === "spring") drawSpring();
     }
 
-    function drawGrid(width, height) {
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = "#fbfdff";
-      ctx.fillRect(0, 0, width, height);
-      ctx.strokeStyle = "#e7edf2";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "#e8eef3";
       ctx.lineWidth = 1;
-      for (let x = 0; x <= width; x += 60) {
-        line(x, 0, x, height);
-      }
-      for (let y = 0; y <= height; y += 60) {
-        line(0, y, width, y);
-      }
-    }
-
-    function drawForceScene(width, height) {
-      const ground = height * 0.68;
-      const scale = 56;
-      const originX = width / 2;
-      const carX = originX + state.x * scale;
-      drawGround(ground, width);
-      drawBoundary(originX - values.limit * scale, ground, "-边界");
-      drawBoundary(originX + values.limit * scale, ground, "+边界");
-      drawTrail(p => ({ x: originX + p.x * scale, y: ground - 38 }));
-      drawCar(carX, ground - 52, 112, 58, "#f0b84d");
-      drawArrow(carX, ground - 115, carX + state.vx * 16, ground - 115, "#2364aa", "v");
-      drawArrow(carX, ground - 155, carX + values.force * 5, ground - 155, "#c9413a", "ΣF");
-      drawAxis(originX, ground + 48, scale, -8, 8, "x / m");
-      if (state.stopped) {
-        label(`已停止：${state.stopReason}`, 72, ground - 205, "#c9413a");
-      }
-    }
-
-    function drawBoundary(x, ground, text) {
+      for (let x = 0; x <= canvas.width; x += 60) line(x, 0, x, canvas.height);
+      for (let y = 0; y <= canvas.height; y += 60) line(0, y, canvas.width, y);
       ctx.strokeStyle = "#c9413a";
-      ctx.lineWidth = 3;
       ctx.setLineDash([8, 8]);
-      line(x, ground - 130, x, ground + 18);
+      ctx.strokeRect(margin, margin, canvas.width - margin * 2, canvas.height - margin * 2);
       ctx.setLineDash([]);
-      label(text, x - 30, ground - 145, "#c9413a");
     }
 
-    function drawProjectileScene(width, height) {
-      const ground = height * 0.78;
-      const originX = 90;
-      const scale = 26;
-      drawGround(ground, width);
-      drawBoundary(originX + values.limit * scale, ground, "边界");
-      drawTrail(p => ({ x: originX + p.x * scale, y: ground - p.y * scale }));
-      const ball = { x: originX + state.x * scale, y: ground - state.y * scale };
-      drawBall(ball.x, ball.y, 22, "#d95d4f");
-      drawArrow(ball.x, ball.y, ball.x + state.vx * 3.2, ball.y - state.vy * 3.2, "#2364aa", "v");
-      drawArrow(ball.x + 46, ball.y - 8, ball.x + 46, ball.y + values.gravity * 5, "#c9413a", "mg");
-      drawAxis(originX, ground + 48, scale, 0, 32, "x / m");
-      if (state.stopped) {
-        label(`已停止：${state.stopReason}`, 72, ground - 250, "#c9413a");
-      }
+    function drawStartHint() {
+      label("请在下方填写参数，然后点击开始模拟", canvas.width / 2 - 188, canvas.height / 2, "#637282", 22);
     }
 
-    function drawSpringScene(width, height) {
-      const centerY = height * 0.55;
-      const wallX = width * 0.18;
-      const scale = 70;
-      const restX = width * 0.55;
-      const blockX = restX + state.x * scale;
-      drawTrack(centerY + 58, width);
+    function drawForce() {
+      const ground = canvas.height * 0.68;
+      const point = toCanvasPoint(state.x, 0);
+      point.y = ground - 40;
+      drawGround(ground);
+      drawTrail(p => ({ x: toCanvasPoint(p.x, 0).x, y: ground - 38 }));
+      drawCar(point.x, point.y, "#f0b84d");
+      drawArrow(point.x, point.y - 70, point.x + state.vx * 16, point.y - 70, "#2364aa", "v");
+      drawArrow(point.x, point.y - 112, point.x + (values.force || 0) * 5, point.y - 112, "#c9413a", "F");
+      drawStopLabel(70, ground - 172);
+    }
+
+    function drawProjectile() {
+      const ground = canvas.height - 88;
+      drawGround(ground);
+      drawTrail(p => toCanvasPoint(p.x, p.y));
+      const point = toCanvasPoint(state.x, state.y);
+      drawBall(point.x, point.y, 22, "#d95d4f");
+      drawArrow(point.x, point.y, point.x + state.vx * 3, point.y - state.vy * 3, "#2364aa", "v");
+      drawArrow(point.x + 44, point.y - 8, point.x + 44, point.y + Math.max(10, values.gravity * 5), "#c9413a", "mg");
+      drawStopLabel(70, ground - 238);
+    }
+
+    function drawSpring() {
+      const centerY = canvas.height * 0.56;
+      const point = toCanvasPoint(state.x, 0);
+      const wallX = margin + 46;
+      drawTrack(centerY + 58);
       drawWall(wallX, centerY);
-      drawBoundary(restX - values.limit * scale, centerY + 58, "-边界");
-      drawBoundary(restX + values.limit * scale, centerY + 58, "+边界");
-      drawSpring(wallX + 18, centerY, blockX - 58, centerY, 14, 12);
-      drawBlock(blockX - 54, centerY - 42, 108, 84, "#73b7a5");
-      drawTrail(p => ({ x: restX + p.x * scale, y: centerY + 88 }));
-      drawArrow(blockX, centerY - 82, blockX + state.vx * 22, centerY - 82, "#2364aa", "v");
-      drawArrow(blockX, centerY - 122, blockX + state.ax * 18, centerY - 122, "#c9413a", "F");
-      ctx.strokeStyle = "#bd741f";
+      drawSpringShape(wallX + 16, centerY, point.x - 58, centerY);
+      drawBlock(point.x - 54, centerY - 42, 108, 84, "#73b7a5");
+      drawTrail(p => ({ x: toCanvasPoint(p.x, 0).x, y: centerY + 92 }));
+      drawArrow(point.x, centerY - 82, point.x + state.vx * 22, centerY - 82, "#2364aa", "v");
+      drawArrow(point.x, centerY - 122, point.x + state.ax * 18, centerY - 122, "#c9413a", "F");
+      ctx.strokeStyle = "#b66a15";
       ctx.setLineDash([8, 8]);
-      line(restX, centerY - 118, restX, centerY + 115);
+      line(canvas.width / 2, centerY - 130, canvas.width / 2, centerY + 124);
       ctx.setLineDash([]);
-      label("平衡位置", restX + 10, centerY + 112, "#8a5a19");
-      if (state.stopped) {
-        label(`已停止：${state.stopReason}`, 72, centerY - 160, "#c9413a");
+      label("平衡位置", canvas.width / 2 + 10, centerY + 120, "#8a5a19", 18);
+      drawStopLabel(70, centerY - 172);
+    }
+
+    function toCanvasPoint(x, y) {
+      if (activeScene === "projectile") {
+        const sx = (canvas.width - margin * 2) / 30;
+        const sy = (canvas.height - margin * 2) / 18;
+        return { x: margin + x * sx, y: canvas.height - margin - y * sy };
       }
+      const sx = (canvas.width - margin * 2) / 16;
+      return { x: canvas.width / 2 + x * sx, y: canvas.height * 0.58 - y * sx };
     }
 
-    function drawGround(y, width) {
+    function fromCanvasPoint(px, py) {
+      if (activeScene === "projectile") {
+        const sx = (canvas.width - margin * 2) / 30;
+        const sy = (canvas.height - margin * 2) / 18;
+        return { x: (px - margin) / sx, y: (canvas.height - margin - py) / sy };
+      }
+      const sx = (canvas.width - margin * 2) / 16;
+      return { x: (px - canvas.width / 2) / sx, y: (canvas.height * 0.58 - py) / sx };
+    }
+
+    function drawGround(y) {
       ctx.strokeStyle = "#52606d";
       ctx.lineWidth = 3;
-      line(40, y, width - 40, y);
+      line(margin, y, canvas.width - margin, y);
       ctx.fillStyle = "#e8eee8";
-      ctx.fillRect(40, y + 3, width - 80, 35);
+      ctx.fillRect(margin, y + 3, canvas.width - margin * 2, 30);
     }
 
-    function drawTrack(y, width) {
+    function drawTrack(y) {
       ctx.strokeStyle = "#52606d";
       ctx.lineWidth = 3;
-      line(60, y, width - 60, y);
-      ctx.strokeStyle = "#d8e0e7";
+      line(margin, y, canvas.width - margin, y);
+      ctx.strokeStyle = "#d8e1e8";
       ctx.lineWidth = 2;
-      line(60, y + 20, width - 60, y + 20);
+      line(margin, y + 20, canvas.width - margin, y + 20);
     }
 
     function drawWall(x, y) {
       ctx.fillStyle = "#51606d";
       ctx.fillRect(x - 16, y - 110, 28, 220);
       ctx.strokeStyle = "#364652";
-      for (let i = -100; i < 110; i += 18) {
-        line(x - 20, y + i, x + 14, y + i - 18);
-      }
+      for (let i = -100; i < 110; i += 18) line(x - 20, y + i, x + 14, y + i - 18);
     }
 
-    function drawCar(x, y, w, h, color) {
-      drawBlock(x - w / 2, y - h / 2, w, h, color);
-      drawBall(x - 34, y + h / 2 + 7, 12, "#26313a");
-      drawBall(x + 34, y + h / 2 + 7, 12, "#26313a");
+    function drawCar(x, y, color) {
+      drawBlock(x - 58, y - 32, 116, 62, color);
+      drawBall(x - 34, y + 38, 12, "#26313a");
+      drawBall(x + 34, y + 38, 12, "#26313a");
     }
 
     function drawBlock(x, y, w, h, color) {
@@ -793,9 +794,9 @@
       ctx.stroke();
     }
 
-    function drawBall(x, y, radius, color) {
+    function drawBall(x, y, r, color) {
       ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fillStyle = color;
       ctx.fill();
       ctx.strokeStyle = "#25313c";
@@ -803,15 +804,15 @@
       ctx.stroke();
     }
 
-    function drawSpring(x1, y1, x2, y2, turns, amp) {
+    function drawSpringShape(x1, y1, x2, y2) {
       ctx.strokeStyle = "#2364aa";
       ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.moveTo(x1, y1);
-      const length = x2 - x1;
-      for (let i = 1; i <= turns * 2; i++) {
-        const x = x1 + (length * i) / (turns * 2);
-        const y = y1 + (i % 2 === 0 ? -amp : amp);
+      const length = Math.max(20, x2 - x1);
+      for (let i = 1; i <= 24; i++) {
+        const x = x1 + length * i / 24;
+        const y = y1 + (i % 2 === 0 ? -12 : 12);
         ctx.lineTo(x, y);
       }
       ctx.lineTo(x2, y2);
@@ -823,32 +824,20 @@
       ctx.strokeStyle = "#1b7f5f";
       ctx.lineWidth = 3;
       ctx.beginPath();
-      trail.forEach((point, index) => {
-        const p = mapper(point);
+      trail.forEach((item, index) => {
+        const p = mapper(item);
         if (index === 0) ctx.moveTo(p.x, p.y);
         else ctx.lineTo(p.x, p.y);
       });
       ctx.stroke();
     }
 
-    function drawAxis(originX, y, scale, min, max, text) {
-      ctx.strokeStyle = "#8998a6";
-      ctx.lineWidth = 2;
-      line(originX + min * scale, y, originX + max * scale, y);
-      for (let i = min; i <= max; i += 2) {
-        const x = originX + i * scale;
-        line(x, y - 7, x, y + 7);
-        label(String(i), x - 8, y + 28, "#607080");
-      }
-      label(text, originX + max * scale - 48, y - 16, "#607080");
-    }
-
     function drawArrow(x1, y1, x2, y2, color, text) {
       const dx = x2 - x1;
       const dy = y2 - y1;
       const length = Math.hypot(dx, dy);
-      if (length < 10) {
-        label(`${text}≈0`, x1 + 10, y1 - 8, color);
+      if (length < 8) {
+        label(`${text}≈0`, x1 + 8, y1 - 8, color, 18);
         return;
       }
       const angle = Math.atan2(dy, dx);
@@ -865,7 +854,11 @@
       ctx.lineTo(x2 - 15 * Math.cos(angle + Math.PI / 6), y2 - 15 * Math.sin(angle + Math.PI / 6));
       ctx.closePath();
       ctx.fill();
-      label(text, x2 + 8, y2 - 8, color);
+      label(text, x2 + 8, y2 - 8, color, 18);
+    }
+
+    function drawStopLabel(x, y) {
+      if (state.stopped) label(`已停止：${state.stopReason}`, x, y, "#c9413a", 20);
     }
 
     function line(x1, y1, x2, y2) {
@@ -875,33 +868,31 @@
       ctx.stroke();
     }
 
-    function label(text, x, y, color) {
+    function label(text, x, y, color, size) {
       ctx.fillStyle = color;
-      ctx.font = "700 18px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif";
+      ctx.font = `700 ${size}px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif`;
       ctx.fillText(text, x, y);
     }
 
-    function roundRect(x, y, w, h, radius) {
+    function roundRect(x, y, w, h, r) {
       ctx.beginPath();
-      ctx.moveTo(x + radius, y);
-      ctx.arcTo(x + w, y, x + w, y + h, radius);
-      ctx.arcTo(x + w, y + h, x, y + h, radius);
-      ctx.arcTo(x, y + h, x, y, radius);
-      ctx.arcTo(x, y, x + w, y, radius);
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
       ctx.closePath();
     }
 
     function format(value) {
-      return Number(value).toFixed(Math.abs(value) >= 10 ? 1 : 2);
+      const n = Number.isFinite(value) ? value : 0;
+      return n.toFixed(Math.abs(n) >= 10 ? 1 : 2);
     }
 
     function tick(now) {
-      const elapsed = Math.min((now - lastTime) / 1000, 0.05);
+      const dt = Math.min((now - lastTime) / 1000, 0.04);
       lastTime = now;
-      if (running) {
-        const factor = slowMotion ? 0.28 : 1;
-        physics(elapsed * factor);
-      }
+      physics(dt);
       draw();
       requestAnimationFrame(tick);
     }
@@ -911,33 +902,22 @@
         document.querySelectorAll(".scene-tab").forEach(tab => tab.classList.remove("active"));
         button.classList.add("active");
         activeScene = button.dataset.scene;
-        setDefaults();
-        renderControls();
-        resetState();
+        renderScene();
       });
     });
 
-    playPause.addEventListener("click", () => {
+    startButton.addEventListener("click", startSimulation);
+    startButtonBottom.addEventListener("click", startSimulation);
+    pauseButton.addEventListener("click", () => {
+      if (!started || state.stopped) return;
       running = !running;
-      playPause.textContent = running ? "Ⅱ" : "▶";
+      pauseButton.textContent = running ? "暂停" : "继续";
+      updateReadout();
     });
+    resetButton.addEventListener("click", () => resetSimulation(false));
+    clearButton.addEventListener("click", clearInputs);
 
-    stepButton.addEventListener("click", () => {
-      physics(1 / 30);
-      draw();
-    });
-
-    resetButton.addEventListener("click", resetState);
-
-    slowButton.addEventListener("click", () => {
-      slowMotion = !slowMotion;
-      slowButton.style.background = slowMotion ? "#2364aa" : "#ffffff";
-      slowButton.style.color = slowMotion ? "#ffffff" : "#17212b";
-    });
-
-    setDefaults();
-    renderControls();
-    resetState();
+    renderScene();
     requestAnimationFrame(tick);
   </script>
 </body>
